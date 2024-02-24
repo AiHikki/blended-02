@@ -2,6 +2,7 @@ import { getPhotos } from "apiService/photos";
 import { Form, Loader, Text, Button } from "components";
 import { useState, useEffect } from "react";
 import { PhotosGallery } from "components";
+import ImgModal from "components/ImgModal/ImgModal";
 
 export const Photos = () => {
   const [query, setQuery] = useState("");
@@ -11,10 +12,13 @@ export const Photos = () => {
   const [isError, setIsError] = useState(null);
   const [isEmpty, setIsEmpty] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
+  const [showModal, setShowModal] = useState(false);
+  const [urlModal, setUrlModal] = useState("");
+  const [altModal, setAltModal] = useState("");
 
   useEffect(() => {
-    setIsLoading(true);
     const fetchImages = async () => {
+      setIsLoading(true);
       try {
         const { photos, total_results, per_page } = await getPhotos(
           query,
@@ -40,22 +44,38 @@ export const Photos = () => {
   }, [query, page]);
 
   const handleSearch = (value) => {
-    setImages([]);
-    setPage(1);
-    setQuery(value);
-    setIsEmpty(false);
-    setIsError(false);
-    setIsVisible(false);
+    if (query !== value) {
+      setImages([]);
+      setPage(1);
+      setQuery(value);
+      setIsEmpty(false);
+      setIsError(false);
+      setIsVisible(false);
+    }
   };
 
   const handleLoadMore = () => {
     setPage((prePage) => prePage + 1);
   };
 
+  const openModal = (src, alt) => {
+    setShowModal(true);
+    setAltModal(alt);
+    setUrlModal(src);
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+    setAltModal("");
+    setUrlModal("");
+  };
+
   return (
     <>
       <Form onSubmit={handleSearch} />
-      {images.length > 0 && <PhotosGallery images={images} />}
+      {images.length > 0 && (
+        <PhotosGallery onClick={openModal} images={images} />
+      )}
       {!images.length && !isEmpty && (
         <Text textAlign="center">Let`s begin search 🔎</Text>
       )}
@@ -71,6 +91,12 @@ export const Photos = () => {
       {isEmpty && (
         <Text textAlign="center">Sorry. There are no images ... 😭</Text>
       )}
+      <ImgModal
+        modalIsOpen={showModal}
+        closeModal={closeModal}
+        src={urlModal}
+        alt={altModal}
+      />
     </>
   );
 };
