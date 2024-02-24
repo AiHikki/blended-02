@@ -1,6 +1,7 @@
 import { getPhotos } from "apiService/photos";
-import { Form, Text } from "components";
+import { Form, Loader, Text, Button } from "components";
 import { useState, useEffect } from "react";
+import { PhotosGallery } from "components";
 
 export const Photos = () => {
   const [query, setQuery] = useState("");
@@ -38,16 +39,38 @@ export const Photos = () => {
     }
   }, [query, page]);
 
-  console.log(images);
-
   const handleSearch = (value) => {
+    setImages([]);
+    setPage(1);
     setQuery(value);
+    setIsEmpty(false);
+    setIsError(false);
+    setIsVisible(false);
+  };
+
+  const handleLoadMore = () => {
+    setPage((prePage) => prePage + 1);
   };
 
   return (
     <>
-      <Text textAlign="center">Let`s begin search 🔎</Text>
       <Form onSubmit={handleSearch} />
+      {images.length > 0 && <PhotosGallery images={images} />}
+      {!images.length && !isEmpty && (
+        <Text textAlign="center">Let`s begin search 🔎</Text>
+      )}
+      {isVisible && (
+        <Button onClick={handleLoadMore} disabled={isLoading}>
+          {isLoading ? "Loading" : "Load More"}
+        </Button>
+      )}
+      {isLoading && <Loader />}
+      {isError && (
+        <Text textAlign="center">❌ Something went wrong - {isError}</Text>
+      )}
+      {isEmpty && (
+        <Text textAlign="center">Sorry. There are no images ... 😭</Text>
+      )}
     </>
   );
 };
